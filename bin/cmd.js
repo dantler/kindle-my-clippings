@@ -52,12 +52,14 @@ function next(titles, collection, bookNumber) {
       text += ' | RATING:  x/10 '
       text += '\n\n'
       text += '------------\n\n';
+      book_text = clippings.getText(book, argv.location);
+      text += book_text.replace(/---------[-]/g, '');
     }
     else
     {
-      text += '============\n\n';
+      text += '\n============\n\n';
+      text += clippings.getText(book, argv.location);
     }
-    text += clippings.getText(book, argv.location);
   }
   if (argv.output) {
     fs.writeFileSync(argv.output, text);
