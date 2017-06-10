@@ -6,6 +6,7 @@ var parseLines = require('./lib/parselines')
 module.exports.getObject = getObject;
 module.exports.getTitles = getTitles;
 module.exports.getBook = getBook;
+module.exports.getBookDuration = getBookDuration;
 module.exports.getText = getText;
 
 /*
@@ -69,6 +70,7 @@ function makeArray(arr) {
     var second = parseLines.secondLine(lines);
     if (second) {
       singleRecord.time = second.time;
+      singleRecord.unixtime = second.unixtime;
       singleRecord.type = second.type;
       singleRecord.location = second.location;
       singleRecord.page = second.page;
@@ -122,21 +124,40 @@ function getBook(collection, title, startFrom) {
   return book;
 }
 
+const getSingleLocation = x => {
+  if (!x.location) return x
+  const index = x.location.indexOf('-')
+  if (index > -1) {
+    return Object.assign({}, x, {
+      location: Number(x.location.substr(0, index)),
+    })
+  }
+  return Object.assign({}, x, {
+    location: Number(x.location),
+  })
+}
+
+/** 
+ * Returns a start and end date for the book.
+ * @return Object 
+ *   { 'started' : Date(), 'finished' : Date() }
+ */
+function getBookDuration(book) {
+  book = _.clone(book);
+  book = _.map(book, getSingleLocation)
+  book = _.sortBy(book, 'unixtime')
+
+  duration = {
+      'started'  : book[0].unixtime,
+      'finished' : book.pop().unixtime
+  };
+
+  return duration;
+}
+
 function getText(book, showLocation) {
   var text = '';
   var locationArray = [];
-  const getSingleLocation = x => {
-    if (!x.location) return x
-    const index = x.location.indexOf('-')
-    if (index > -1) {
-      return Object.assign({}, x, {
-        location: Number(x.location.substr(0, index)),
-      })
-    }
-    return Object.assign({}, x, {
-      location: Number(x.location),
-    })
-  }
   book = _.map(book, getSingleLocation)
   book = _.sortBy(book, 'location')
   for (let i = 0; i < book.length; i++) {
