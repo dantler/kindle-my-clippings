@@ -43,16 +43,20 @@ function next(titles, collection, bookNumber) {
     text = JSON.stringify(book);
   }
   else {
-    text = chosenTitle + '\n';
+    text = chosenTitle;
     if (argv.format && argv.format === 'david') {
-      text += '\n'
+      text += ' (' + book[0].author + ')\n';
       var dateFormat = require('dateformat');
       var started = dateFormat(clippings.getBookDuration(book).started, "yyyy-mm-dd");
       text += 'READ: ' + started;
       text += ' | RATING:  x/10 '
       text += '\n\n'
+      text += '------------\n\n';
     }
-    text += '============\n\n';
+    else
+    {
+      text += '============\n\n';
+    }
     text += clippings.getText(book, argv.location);
   }
   if (argv.output) {
