@@ -37,14 +37,42 @@ clippings.getTitles(fileNameArray, function (titles, collection) {
 
 function next(titles, collection, bookNumber) {
   var chosenTitle = titles[bookNumber - 1];
+  var chosenSubtitle = '';
   var book = clippings.getBook(collection, chosenTitle, argv.start);
   var text;
+
   if (argv.format && argv.format === 'json') {
     text = JSON.stringify(book);
   }
   else {
-    text = chosenTitle;
-    if (argv.format && argv.format === 'david') {
+    if (argv.format && argv.format === 'md') {
+      var dateFormat = require('dateformat');
+      var hasSubtitle = chosenTitle.split(':')[1];
+
+      if (hasSubtitle) {
+        chosenSubtitle = chosenTitle.split(':')[1].trim();
+        chosenTitle = chosenTitle.split(':')[0].trim();
+      }
+      text =    'layout:            booknotes'
+      text += '\ntitle:             \'' + chosenTitle + '\'';
+      text += '\nsubtitle:          \'' + chosenSubtitle + '\'';
+      text += '\nbook_author:       \'' + book[0].author + '\''
+      text += '\nlanguage:          en_US'
+      text += '\nbook_rating:       x'
+      text += '\nisbn:              978-xxx'
+      text += '\nread_date_start:   \'' + dateFormat(clippings.getBookDuration(book).started, "yyyy-mm-dd") +'\''
+      text += '\nread_date_end:     \'' + dateFormat(clippings.getBookDuration(book).finished, "yyyy-mm-dd") + '\''
+      text += '\ntags:'
+      text += '\n  - books'
+      text += '\n\n-------\n\n'
+      text += 'Paste blurb here'
+      text += '\n\n-------\n\n'
+      text += '## my notes\n\n'
+      book_text = clippings.getText(book, argv.location);
+      text += book_text.replace(/---------[-]/g, '');
+    }
+    else if (argv.format && argv.format === 'david') {
+      text = chosenTitle;
       text += ' (' + book[0].author + ')\n';
       var dateFormat = require('dateformat');
       var started = dateFormat(clippings.getBookDuration(book).started, "yyyy-mm-dd");
@@ -57,6 +85,7 @@ function next(titles, collection, bookNumber) {
     }
     else
     {
+      text = chosenTitle;
       text += '\n============\n\n';
       text += clippings.getText(book, argv.location);
     }
